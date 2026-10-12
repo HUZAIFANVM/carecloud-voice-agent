@@ -50,7 +50,7 @@ async function startTestServer({ llm = { enabled: false }, db } = {}) {
 }
 
 const validPatient = () => ({
-  first_name: 'Jane', last_name: "O'Brien-Smith", date_of_birth: '04/12/1985', sex: 'Female',
+  first_name: 'Ayesha', last_name: "D'Souza-Khan", date_of_birth: '04/12/1985', sex: 'Female',
   phone_number: '(555) 201-3344', address_line_1: '123 Main St', city: 'Springfield', state: 'il', zip_code: '62701'
 });
 

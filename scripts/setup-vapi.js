@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * One-command Vapi setup: creates (or updates) the "Ava" assistant pointing at this
+ * One-command Vapi setup: creates (or updates) the "Huzaifa Help" assistant pointing at this
  * server as its Custom LLM, then attaches a free Vapi US phone number to it.
  *
  *   npm run setup:vapi                       # uses PUBLIC_BASE_URL from .env
@@ -51,7 +51,7 @@ const saveState = state => { fs.mkdirSync(path.dirname(STATE_FILE), { recursive:
 
 function assistantBody({ withSpeechOptions }) {
   const body = {
-    name: 'CareCloud Intake - Ava',
+    name: 'Huzaifa Help',
     firstMessage: text('en').greeting, // must match the server's greeting (it is stored in the transcript)
     model: {
       provider: 'custom-llm',
@@ -66,9 +66,14 @@ function assistantBody({ withSpeechOptions }) {
     maxDurationSeconds: 900
   };
   if (withSpeechOptions) {
-    // Multilingual transcription so "hablo español" works; voice is optional.
+    // Multilingual: Deepgram 'multi' transcribes English/Spanish/Hindi (spoken Urdu), and an
+    // OpenAI voice speaks English, Urdu and Spanish with one consistent voice.
     body.transcriber = { provider: 'deepgram', model: process.env.VAPI_TRANSCRIBER_MODEL || 'nova-3', language: 'multi' };
-    if (process.env.VAPI_VOICE_ID) body.voice = { provider: process.env.VAPI_VOICE_PROVIDER || 'vapi', voiceId: process.env.VAPI_VOICE_ID };
+    body.voice = {
+      provider: process.env.VAPI_VOICE_PROVIDER || 'openai',
+      voiceId: process.env.VAPI_VOICE_ID || 'onyx', // male voice to match "Huzaifa"
+      ...((process.env.VAPI_VOICE_PROVIDER || 'openai') === 'openai' ? { model: process.env.VAPI_VOICE_MODEL || 'gpt-4o-mini-tts' } : {})
+    };
   }
   return body;
 }

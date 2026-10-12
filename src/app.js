@@ -31,7 +31,9 @@ function createApp(config, overrides = {}) {
   app.use(express.json({ limit: '100kb' }));
   app.use(express.static(path.join(__dirname, '..', 'public')));
 
-  app.get('/health', (_req, res) => res.json(envelope({ status: 'ok', llm: llm.enabled ? llm.model : 'scripted-fallback' })));
+  app.get('/health', (_req, res) => res.json(envelope({
+    status: 'ok', llm: llm.enabled ? llm.model : 'scripted-fallback', phone_number: config.publicPhoneNumber || null
+  })));
   app.use('/patients', createPatientsRouter({ patients, log }));
   app.use(createCallsRouter({ calls, conversation }));
   app.use(createVapiRouter({ conversation, calls, config, log }));

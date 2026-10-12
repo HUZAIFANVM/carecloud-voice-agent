@@ -32,10 +32,10 @@ function parseAnswer(field, speech) {
     case 'date_of_birth': return parseSpokenDate(cleaned);
     case 'sex': {
       const lower = cleaned.toLowerCase();
-      if (/female|woman|femenino|mujer/.test(lower)) return 'Female';
-      if (/\bmale\b|\bman\b|masculino|hombre/.test(lower)) return 'Male';
-      if (/decline|prefer not|no decir/.test(lower)) return 'Decline to Answer';
-      if (/other|otro/.test(lower)) return 'Other';
+      if (/female|woman|femenino|mujer|خاتون|عورت|aurat|khatoon/.test(lower)) return 'Female';
+      if (/\bmale\b|\bman\b|masculino|hombre|مرد|\bmard\b/.test(lower)) return 'Male';
+      if (/decline|prefer not|no decir|نہیں بتانا/.test(lower)) return 'Decline to Answer';
+      if (/other|otro|دیگر/.test(lower)) return 'Other';
       return cleaned;
     }
     case 'phone_number': return cleaned.replace(/\D/g, '');
@@ -45,7 +45,7 @@ function parseAnswer(field, speech) {
 }
 
 // After "Is that correct, or anything to change?", "no, that's all" also means confirmed.
-const isYes = speech => /\b(yes|yeah|yep|correct|right|sure|s[ií]|correcto|claro|perfect|looks good|all good|that's all|nothing)\b/i.test(speech);
+const isYes = speech => /\b(yes|yeah|yep|correct|right|sure|s[ií]|correcto|claro|perfect|looks good|all good|that's all|nothing|jee|ji|haan|han|theek)\b|جی|ہاں|درست|ٹھیک/i.test(speech);
 const isStartOver = speech => /start over|start again|begin again|empezar de nuevo/i.test(speech);
 
 function nextQuestion(state) {
@@ -56,9 +56,13 @@ function nextQuestion(state) {
 
 /** Returns { action, reply } where action is 'ask' | 'read_back' | 'save' | 'start_over'. */
 function scriptedTurn(state, speech) {
-  if (/espa[nñ]ol|spanish/i.test(speech) && state.language !== 'es') {
-    state.language = 'es';
-    return { action: 'ask', reply: nextQuestion(state) || text('es').readBackQuestion };
+  // Language switching without an LLM: explicit requests or Urdu script.
+  const requested = /espa[nñ]ol|spanish/i.test(speech) ? 'es'
+    : /urdu|اردو|[\u0600-\u06FF]/i.test(speech) ? 'ur'
+      : /\benglish\b/i.test(speech) ? 'en' : null;
+  if (requested && requested !== state.language) {
+    state.language = requested;
+    return { action: 'ask', reply: nextQuestion(state) || text(requested).readBackQuestion };
   }
   if (isStartOver(speech)) return { action: 'start_over' };
 

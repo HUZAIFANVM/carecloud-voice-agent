@@ -7,6 +7,8 @@ module.exports = {
   port: Number(env.PORT || 3000),
   databasePath: env.DATABASE_PATH || path.join(__dirname, '..', 'data', 'carecloud.db'),
   seedData: env.SEED_DATA !== 'false',
+  // Shown on the dashboard so staff know which number to call.
+  publicPhoneNumber: env.PUBLIC_PHONE_NUMBER || '',
 
   vapi: {
     // Shared secret Vapi sends as "Authorization: Bearer <secret>" (set it as the Custom LLM

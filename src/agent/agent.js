@@ -53,7 +53,7 @@ function createAgent({ patients, llm, log }) {
       existing_patient_decision: state.existing_decision,
       server_notes: serverNotes
     };
-    const lines = history.slice(-HISTORY_TURNS).map(entry => `${entry.role === 'agent' ? 'Ava' : 'Caller'}: ${entry.text}`);
+    const lines = history.slice(-HISTORY_TURNS).map(entry => `${entry.role === 'agent' ? 'Huzaifa' : 'Caller'}: ${entry.text}`);
     return [
       { role: 'system', content: SYSTEM_PROMPT },
       {
@@ -68,7 +68,7 @@ function createAgent({ patients, llm, log }) {
     return {
       updates,
       intent: INTENTS.has(raw?.intent) ? raw.intent : 'continue',
-      language: raw?.language === 'es' ? 'es' : raw?.language === 'en' ? 'en' : null,
+      language: ['en', 'es', 'ur'].includes(raw?.language) ? raw.language : null,
       offered_optional: raw?.offered_optional === true,
       reply: typeof raw?.reply === 'string' ? raw.reply.trim() : ''
     };

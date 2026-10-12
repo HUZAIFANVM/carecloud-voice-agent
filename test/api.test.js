@@ -53,10 +53,10 @@ test('GET /patients supports filters', async () => {
 
 test('PUT allows partial update and re-validates', async () => {
   const created = (await server.request('POST', '/patients', validPatient())).body.data;
-  const updated = await server.request('PUT', `/patients/${created.patient_id}`, { city: 'Chicago', email: 'jane@example.com' });
+  const updated = await server.request('PUT', `/patients/${created.patient_id}`, { city: 'Chicago', email: 'ayesha@example.com' });
   assert.equal(updated.status, 200);
   assert.equal(updated.body.data.city, 'Chicago');
-  assert.equal(updated.body.data.first_name, 'Jane');
+  assert.equal(updated.body.data.first_name, 'Ayesha');
   const bad = await server.request('PUT', `/patients/${created.patient_id}`, { zip_code: '1234' });
   assert.equal(bad.status, 422);
 });

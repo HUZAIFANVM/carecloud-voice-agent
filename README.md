@@ -1,6 +1,6 @@
 
 
-A phone-based AI agent ("Ava") that registers new U.S. patients through natural conversation, saves them to a persistent database, and exposes the records through a REST API and a small dashboard. Everything is built on free tiers.
+A multilingual (English / Urdu / Spanish) phone-based AI agent ("Huzaifa") that registers new U.S. patients through natural conversation, saves them to a persistent database, and exposes the records through a REST API and a small dashboard. Everything is built on free tiers.
 
 | | |
 |---|---|
@@ -52,12 +52,12 @@ A hallucinated "you're all set" can never reach a caller unless the write actual
 
 ## Features
 
-- Natural conversation: out-of-order answers, several fields in one sentence, spelled names ("D-A-V-I-S"), spoken dates and emails.
+- Natural conversation: out-of-order answers, several fields in one sentence, spelled names ("Q-U-R-E-S-H-I"), spoken dates and emails.
 - Validation with field-specific re-prompts (future DOB, 7-digit phone, bad ZIP or state, and so on).
 - Server-generated read-back before saving. Corrections during confirmation read back only the changed field.
 - Optional fields are offered once, after the required fields (insurance, emergency contact, language, email).
-- **Bonus: duplicate detection.** A phone number that matches an existing patient prompts: "It looks like we already have a record for Jane Doe. Would you like to update your information instead?"
-- **Bonus: Spanish.** "Hablo español" switches the agent to Spanish (Vapi transcriber set to `multi`).
+- **Bonus: duplicate detection.** A phone number that matches an existing patient prompts: "It looks like we already have a record for Ayesha Khan. Would you like to update your information instead?"
+- **Bonus: multilingual (English by default, Urdu, Spanish).** The agent detects the caller's language on every turn and answers in it: Urdu (Urdu script, Roman Urdu, or Hindi-script transcripts), Spanish ("hablo español"), or English. The read-back and fixed phrases are localized, and stored values stay in standard English formats. On the phone, Deepgram `multi` transcribes and an OpenAI voice (`onyx`) speaks all three languages.
 - **Bonus: transcripts.** Every call's transcript and state are stored in the `calls` table and linked to the patient (`GET /calls`).
 - **Bonus: dashboard.** `/` shows patients and call transcripts, plus a browser test chat (typed, or voice in Chrome) using the same agent.
 - **Bonus: automated tests.** 23 tests covering the API, agent flows, failure modes and the Vapi protocol (`npm test`).
@@ -79,7 +79,7 @@ All responses use the envelope `{ "data": ..., "error": null }`.
 
 ```bash
 curl -X POST $API/patients -H 'Content-Type: application/json' -d '{
-  "first_name":"Jane","last_name":"Doe","date_of_birth":"04/12/1985","sex":"Female",
+  "first_name":"Ayesha","last_name":"Khan","date_of_birth":"04/12/1985","sex":"Female",
   "phone_number":"(555) 201-3344","address_line_1":"1 Main St","city":"Austin","state":"TX","zip_code":"78701"}'
 curl "$API/patients?last_name=doe"
 ```
@@ -168,7 +168,7 @@ JSON-lines logs on stdout (`railway logs`). Every turn is logged as `call_turn`.
 - **Vapi free numbers** have daily call limits and can't call internationally. Vapi credit ($10 trial) pays for its speech services.
 - **Two LLM calls on a rejected value** add about 0.5 s on those turns, traded for natural re-prompts.
 - **SQLite** means a single instance. That's fine at this scale; switch to Postgres to run multiple replicas.
-- **Spanish** relies on the multilingual transcriber and Vapi's default voice, which speaks Spanish with an English accent. Picking a multilingual voice fixes that.
+- **Urdu on the phone:** Deepgram `multi` has no dedicated Urdu model, so spoken Urdu is transcribed through its Hindi support (often in Devanagari or Roman script). The LLM understands that reliably, but accuracy for names and addresses spoken in Urdu is lower than in English. A dedicated Urdu STT (e.g. Azure `ur-IN`) would improve it, at the cost of English accuracy on a single assistant.
 - **Duplicate detection** uses the phone number only, as the spec suggests. Family members who share a number can choose "new registration".
 - No authentication on the REST API (out of scope for the challenge). It does have input validation, a body size limit and parameterized SQL.
 - `node:sqlite` is marked experimental in Node 22 (its warning is suppressed in npm scripts).

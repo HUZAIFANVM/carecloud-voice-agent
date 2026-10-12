@@ -3,163 +3,467 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CareCloud Intake</title>
+<title>CareCloud Patient Intake</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Nastaliq+Urdu:wght@400;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #f6f7f9; --surface: #ffffff; --text: #1b1f24; --muted: #5f6b7a; --border: #e1e5ea;
-    --accent: #2357d9; --accent-soft: #e8eefc; --ok: #1d7a46; --warn: #a15c00; --bad: #b42318;
+    --bg: #f3f7f9; --surface: #ffffff; --surface-2: #f8fbfc; --text: #102a35; --muted: #5b7380; --border: #dde8ec;
+    --primary: #0b7a75; --primary-strong: #075e5a; --primary-soft: #e3f4f2; --accent: #1f6fd1; --accent-soft: #e6f0fc;
+    --ok: #13854e; --ok-soft: #e3f5ec; --warn: #b26a00; --warn-soft: #fdf1df; --bad: #c0362c; --bad-soft: #fbe7e5;
+    --shadow: 0 1px 2px rgba(16, 42, 53, .06), 0 4px 16px rgba(16, 42, 53, .05);
+    --urdu: 'Noto Nastaliq Urdu', serif;
   }
   @media (prefers-color-scheme: dark) {
-    :root { --bg: #111418; --surface: #1a1f25; --text: #e6e9ed; --muted: #97a3b1; --border: #2b323b;
-            --accent: #7aa2ff; --accent-soft: #1f2a44; --ok: #5cc98a; --warn: #f0b45c; --bad: #ff7b72; }
+    :root:not([data-theme="light"]) {
+      --bg: #0c1519; --surface: #132126; --surface-2: #172a30; --text: #e3eef1; --muted: #8fa9b3; --border: #24393f;
+      --primary: #3cc4b9; --primary-strong: #5fd6cc; --primary-soft: #143a3a; --accent: #79aef5; --accent-soft: #182c45;
+      --ok: #5fd39a; --ok-soft: #133426; --warn: #f2b45c; --warn-soft: #3a2a12; --bad: #ff8a80; --bad-soft: #3b1c1a;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .3);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0c1519; --surface: #132126; --surface-2: #172a30; --text: #e3eef1; --muted: #8fa9b3; --border: #24393f;
+    --primary: #3cc4b9; --primary-strong: #5fd6cc; --primary-soft: #143a3a; --accent: #79aef5; --accent-soft: #182c45;
+    --ok: #5fd39a; --ok-soft: #133426; --warn: #f2b45c; --warn-soft: #3a2a12; --bad: #ff8a80; --bad-soft: #3b1c1a;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3);
   }
   * { box-sizing: border-box; }
-  body { margin: 0; font: 14px/1.5 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: var(--bg); color: var(--text); }
-  header { padding: 20px 16px 8px; max-width: 1200px; margin: 0 auto; }
-  h1 { font-size: 20px; margin: 0; }
-  header p { margin: 4px 0 0; color: var(--muted); }
-  main { max-width: 1200px; margin: 0 auto; padding: 12px 16px 40px; display: grid; gap: 16px; grid-template-columns: 1fr; }
-  @media (min-width: 960px) { main { grid-template-columns: 2fr 1fr; } }
-  section { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; min-width: 0; }
-  h2 { font-size: 15px; margin: 0 0 12px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-  .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
-  input, button { font: inherit; color: inherit; }
-  input { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; min-width: 0; flex: 1; }
-  button { background: var(--accent); color: #fff; border: 0; border-radius: 6px; padding: 6px 12px; cursor: pointer; }
-  button.secondary { background: var(--accent-soft); color: var(--accent); }
-  button:disabled { opacity: .5; cursor: default; }
+  body { margin: 0; font: 14px/1.5 Inter, system-ui, -apple-system, 'Segoe UI', Roboto, var(--urdu), sans-serif; background: var(--bg); color: var(--text); }
+  [dir="rtl"], .ur { font-family: var(--urdu); line-height: 2.1; }
+  button, input, select { font: inherit; color: inherit; }
+  svg { flex: none; }
+
+  /* Top bar */
+  .topbar { background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 5; }
+  .topbar-inner { max-width: 1320px; margin: 0 auto; padding: 12px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .brand { display: flex; align-items: center; gap: 10px; margin-right: auto; }
+  .logo { width: 36px; height: 36px; border-radius: 10px; background: var(--primary); display: grid; place-items: center; color: #fff; }
+  .brand h1 { font-size: 16px; margin: 0; line-height: 1.2; }
+  .brand p { margin: 0; color: var(--muted); font-size: 12px; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; background: var(--surface-2); border: 1px solid var(--border); color: var(--muted); white-space: nowrap; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+  .dot.on { background: var(--ok); box-shadow: 0 0 0 3px var(--ok-soft); }
+  .dot.off { background: var(--bad); }
+  .call-pill { background: var(--primary-soft); color: var(--primary-strong); border-color: transparent; font-weight: 600; text-decoration: none; }
+
+  main { max-width: 1320px; margin: 0 auto; padding: 16px 16px 48px; }
+
+  /* Stats */
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; box-shadow: var(--shadow); display: flex; gap: 12px; align-items: center; }
+  .stat-icon { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; background: var(--primary-soft); color: var(--primary); }
+  .stat-icon.blue { background: var(--accent-soft); color: var(--accent); }
+  .stat-icon.green { background: var(--ok-soft); color: var(--ok); }
+  .stat-icon.amber { background: var(--warn-soft); color: var(--warn); }
+  .stat-value { font-size: 22px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .stat-label { color: var(--muted); font-size: 12px; }
+
+  .layout { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); }
+  @media (min-width: 1100px) { .layout { grid-template-columns: minmax(0, 1fr) 380px; align-items: start; } .side { position: sticky; top: 76px; } }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); min-width: 0; }
+  .card + .card { margin-top: 16px; }
+  .card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 14px 16px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .card-head h2 { font-size: 15px; margin: 0; display: flex; align-items: center; gap: 8px; }
+  .count { font-size: 12px; color: var(--muted); font-weight: 500; }
+  .card-body { padding: 14px 16px; }
+
+  .filters { display: flex; gap: 8px; flex-wrap: wrap; padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--surface-2); }
+  .field { position: relative; flex: 1 1 160px; min-width: 0; }
+  .field svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--muted); }
+  input, select { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; outline: none; }
+  .field input { padding-left: 32px; }
+  input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); }
+  .btn { background: var(--primary); color: #fff; border: 0; border-radius: 8px; padding: 8px 14px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .btn:hover { background: var(--primary-strong); }
+  .btn.ghost { background: transparent; color: var(--primary); border: 1px solid var(--border); }
+  .btn.ghost:hover { background: var(--primary-soft); }
+  .btn.danger { background: var(--bad); }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .icon-btn { background: transparent; border: 1px solid var(--border); border-radius: 8px; padding: 6px; cursor: pointer; color: var(--muted); display: grid; place-items: center; }
+
+  /* Patients table */
   .table-wrap { overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--border); white-space: nowrap; }
-  th { color: var(--muted); font-weight: 600; }
-  td.wrap { white-space: normal; min-width: 180px; }
-  .muted { color: var(--muted); }
-  .badge { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; background: var(--accent-soft); color: var(--accent); }
-  .badge.completed { color: var(--ok); } .badge.abandoned { color: var(--warn); } .badge.failed { color: var(--bad); }
-  .chat { height: 380px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; padding: 10px; background: var(--bg); display: flex; flex-direction: column; gap: 8px; }
-  .msg { max-width: 85%; padding: 8px 10px; border-radius: 10px; white-space: pre-wrap; }
-  .msg.agent { background: var(--surface); border: 1px solid var(--border); align-self: flex-start; }
-  .msg.caller { background: var(--accent); color: #fff; align-self: flex-end; }
-  .msg.system { align-self: center; color: var(--muted); font-size: 12px; }
-  .chat-input { display: flex; gap: 8px; margin-top: 8px; }
-  details { border-bottom: 1px solid var(--border); padding: 8px 0; }
-  summary { cursor: pointer; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-  .transcript { margin: 8px 0 0; padding-left: 12px; border-left: 2px solid var(--border); font-size: 13px; }
-  .transcript div { margin: 4px 0; }
-  .empty { color: var(--muted); padding: 12px 0; }
+  th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); font-weight: 600; padding: 10px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; background: var(--surface-2); }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; vertical-align: middle; }
+  tbody tr { cursor: pointer; }
+  tbody tr:hover { background: var(--surface-2); }
+  tbody tr:last-child td { border-bottom: 0; }
+  .patient-cell { display: flex; align-items: center; gap: 10px; }
+  .avatar { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 12px; color: #fff; flex: none; }
+  .name { font-weight: 600; }
+  .sub { color: var(--muted); font-size: 12px; }
+  .tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; background: var(--surface-2); border: 1px solid var(--border); color: var(--muted); }
+  .tag.ins { background: var(--accent-soft); color: var(--accent); border-color: transparent; }
+  .tag.lang { background: var(--primary-soft); color: var(--primary-strong); border-color: transparent; }
+  .tag.completed { background: var(--ok-soft); color: var(--ok); border-color: transparent; }
+  .tag.in_progress { background: var(--accent-soft); color: var(--accent); border-color: transparent; }
+  .tag.abandoned { background: var(--warn-soft); color: var(--warn); border-color: transparent; }
+  .tag.failed { background: var(--bad-soft); color: var(--bad); border-color: transparent; }
+  .empty { color: var(--muted); text-align: center; padding: 28px 12px; }
+
+  /* Call log */
+  .call { border-bottom: 1px solid var(--border); }
+  .call:last-child { border-bottom: 0; }
+  .call summary { list-style: none; cursor: pointer; padding: 12px 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .call summary::-webkit-details-marker { display: none; }
+  .call summary:hover { background: var(--surface-2); }
+  .call-icon { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; background: var(--surface-2); color: var(--muted); }
+  .call-main { flex: 1; min-width: 160px; }
+  .transcript { padding: 4px 16px 16px 58px; display: flex; flex-direction: column; gap: 6px; }
+  .line { font-size: 13px; }
+  .line b { color: var(--muted); font-weight: 600; margin-inline-end: 6px; }
+  .line.agent b { color: var(--primary); }
+
+  /* Simulator */
+  .sim-head { display: flex; align-items: center; gap: 10px; }
+  .sim-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--primary); color: #fff; display: grid; place-items: center; font-weight: 700; }
+  .chat { height: 420px; overflow-y: auto; padding: 14px; background: var(--surface-2); display: flex; flex-direction: column; gap: 10px; }
+  .msg { max-width: 88%; padding: 9px 12px; border-radius: 14px; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 13.5px; }
+  .msg.agent { background: var(--surface); border: 1px solid var(--border); align-self: flex-start; border-bottom-left-radius: 4px; }
+  .msg.caller { background: var(--primary); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
+  .msg.system { align-self: center; color: var(--muted); font-size: 12px; background: none; padding: 2px; text-align: center; }
+  .msg[dir="rtl"] { font-size: 15px; }
+  .typing { align-self: flex-start; color: var(--muted); font-size: 12px; }
+  .composer { display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--border); }
+  .composer input { flex: 1; }
+  .sim-options { display: flex; gap: 10px; align-items: center; justify-content: space-between; padding: 0 12px 12px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+  .sim-options label { display: inline-flex; gap: 6px; align-items: center; }
+  .sim-options select { width: auto; padding: 4px 8px; }
+  .sim-options input[type=checkbox] { width: auto; }
+  .mic.live { background: var(--bad); color: #fff; border-color: var(--bad); }
+
+  /* Drawer */
+  .scrim { position: fixed; inset: 0; background: rgba(8, 20, 26, .45); opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 20; }
+  .drawer { position: fixed; top: 0; right: 0; height: 100%; width: min(480px, 100%); background: var(--surface); border-left: 1px solid var(--border); transform: translateX(100%); transition: transform .25s ease; z-index: 21; display: flex; flex-direction: column; }
+  .open .scrim { opacity: 1; pointer-events: auto; }
+  .open .drawer { transform: none; }
+  .drawer-head { padding: 18px 20px; border-bottom: 1px solid var(--border); display: flex; gap: 12px; align-items: center; }
+  .drawer-head .avatar { width: 48px; height: 48px; font-size: 16px; }
+  .drawer-body { padding: 8px 20px 24px; overflow-y: auto; flex: 1; }
+  .section { padding: 14px 0; border-bottom: 1px solid var(--border); }
+  .section:last-child { border-bottom: 0; }
+  .section h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 0 0 10px; }
+  .kv { display: grid; grid-template-columns: 140px 1fr; gap: 6px 12px; font-size: 13px; }
+  .kv dt { color: var(--muted); }
+  .kv dd { margin: 0; overflow-wrap: anywhere; }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
+  @media (max-width: 600px) { .hide-sm { display: none; } .kv { grid-template-columns: 1fr; } .kv dt { margin-top: 6px; } }
 </style>
 </head>
 <body>
-<header>
-  <h1>CareCloud Patient Intake</h1>
-  <p>Patients registered by the voice agent, call transcripts, and a browser test chat that uses the same agent as the phone line.</p>
-</header>
-<main>
-  <section>
-    <h2>Patients <button class="secondary" id="refresh">Refresh</button></h2>
-    <form class="toolbar" id="filters">
-      <input name="last_name" placeholder="Last name">
-      <input name="date_of_birth" placeholder="DOB MM/DD/YYYY">
-      <input name="phone_number" placeholder="Phone">
-      <button type="submit">Search</button>
-    </form>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Name</th><th>DOB</th><th>Sex</th><th>Phone</th><th>Address</th><th>Insurance</th><th>Language</th><th>Registered</th></tr></thead>
-        <tbody id="patients"></tbody>
-      </table>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z"/></svg>
+      </div>
+      <div>
+        <h1>CareCloud Health</h1>
+        <p>Patient Intake · Voice AI Front Desk</p>
+      </div>
     </div>
-    <h2 style="margin-top:24px">Recent calls</h2>
-    <div id="calls"></div>
-  </section>
+    <span class="pill" id="status"><span class="dot"></span>Checking…</span>
+    <a class="pill call-pill" id="phone" href="#" hidden>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>
+      <span></span>
+    </a>
+  </div>
+</header>
 
-  <section>
-    <h2>Test the agent <button id="new-session">New conversation</button></h2>
-    <div class="chat" id="chat"><div class="msg system">Start a conversation to talk to Ava. Typed or spoken (Chrome) replies go through the same agent as a phone call.</div></div>
-    <form class="chat-input" id="chat-form">
-      <input id="chat-text" placeholder="Type what the caller says…" autocomplete="off" disabled>
-      <button type="button" class="secondary" id="mic" title="Speak (Chrome)" disabled>🎤</button>
-      <button type="submit" id="send" disabled>Send</button>
-    </form>
-    <label class="muted" style="display:block;margin-top:8px"><input type="checkbox" id="speak" style="flex:none"> Read Ava's replies aloud</label>
-  </section>
+<main>
+  <div class="stats">
+    <div class="stat"><div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></svg></div>
+      <div><div class="stat-value" id="s-patients">–</div><div class="stat-label">Registered patients</div></div></div>
+    <div class="stat"><div class="stat-icon blue"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M12 14v4M10 16h4"/></svg></div>
+      <div><div class="stat-value" id="s-today">–</div><div class="stat-label">New today</div></div></div>
+    <div class="stat"><div class="stat-icon green"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+      <div><div class="stat-value" id="s-rate">–</div><div class="stat-label">Calls completed</div></div></div>
+    <div class="stat"><div class="stat-icon amber"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 8 6 6M4 14l6-6 2-3M2 5h12M7 2h1M22 22l-5-10-5 10M14 18h6"/></svg></div>
+      <div><div class="stat-value" id="s-lang">–</div><div class="stat-label">Non-English preference</div></div></div>
+  </div>
+
+  <div class="layout">
+    <div>
+      <section class="card">
+        <div class="card-head">
+          <h2>Patient registry <span class="count" id="p-count"></span></h2>
+          <button class="btn ghost" id="refresh" type="button">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.6-6.4L21 8M21 3v5h-5"/></svg>Refresh
+          </button>
+        </div>
+        <form class="filters" id="filters">
+          <div class="field"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><input id="quick" placeholder="Search name, phone, city…" autocomplete="off"></div>
+          <div class="field hide-sm"><input name="last_name" placeholder="Last name (exact)" style="padding-left:10px"></div>
+          <div class="field hide-sm"><input name="date_of_birth" placeholder="DOB MM/DD/YYYY" style="padding-left:10px"></div>
+          <button class="btn" type="submit">Search</button>
+        </form>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Patient</th><th>Age / Sex</th><th>Phone</th><th>Location</th><th>Insurance</th><th>Language</th><th>Registered</th></tr></thead>
+            <tbody id="patients"><tr><td colspan="7" class="empty">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head"><h2>Call log <span class="count" id="c-count"></span></h2></div>
+        <div id="calls"><div class="empty">Loading…</div></div>
+      </section>
+    </div>
+
+    <aside class="side">
+      <section class="card">
+        <div class="card-head">
+          <div class="sim-head">
+            <div class="sim-avatar">H</div>
+            <div><h2>Call simulator</h2><div class="sub">Talk to Huzaifa, the same agent as the phone line</div></div>
+          </div>
+          <button class="btn" id="new-session" type="button">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>New call
+          </button>
+        </div>
+        <div class="chat" id="chat" aria-live="polite">
+          <div class="msg system">Start a new call, then type or use the mic. English is the default; speak or type Urdu (اردو) or Spanish and Huzaifa switches automatically.</div>
+        </div>
+        <form class="composer" id="chat-form">
+          <input id="chat-text" placeholder="What the caller says…" autocomplete="off" dir="auto" disabled>
+          <button type="button" class="icon-btn mic" id="mic" title="Speak (Chrome)" aria-label="Speak" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5"/></svg>
+          </button>
+          <button type="submit" class="btn" id="send" disabled>Send</button>
+        </form>
+        <div class="sim-options">
+          <label>Mic language
+            <select id="mic-lang"><option value="en-US">English</option><option value="ur-PK">اردو Urdu</option><option value="es-US">Español</option></select>
+          </label>
+          <label><input type="checkbox" id="speak"> Read replies aloud</label>
+        </div>
+      </section>
+    </aside>
+  </div>
 </main>
+
+<div id="drawer-root">
+  <div class="scrim" id="scrim"></div>
+  <aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="d-name">
+    <div class="drawer-head">
+      <div class="avatar" id="d-avatar"></div>
+      <div style="flex:1;min-width:0"><div class="name" id="d-name" style="font-size:17px"></div><div class="sub mono" id="d-id"></div></div>
+      <button class="icon-btn" id="d-close" aria-label="Close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="drawer-body" id="d-body"></div>
+  </aside>
+</div>
+
 <script>
 const $ = id => document.getElementById(id);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const fmtPhone = p => (p && p.length === 10 ? `(${p.slice(0, 3)}) ${p.slice(3, 6)}-${p.slice(6)}` : esc(p || ''));
-const fmtTime = iso => new Date(iso).toLocaleString();
+const hasUrdu = text => /[؀-ۿ]/.test(text || '');
+const dirAttr = text => (hasUrdu(text) ? ' dir="rtl" lang="ur"' : '');
+const fmtPhone = p => (p && p.length === 10 ? `(${p.slice(0, 3)}) ${p.slice(3, 6)}-${p.slice(6)}` : esc(p || '—'));
+const fmtDate = iso => new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+const fmtTime = iso => new Date(iso).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+const isToday = iso => new Date(iso).toDateString() === new Date().toDateString();
+const initials = p => `${p.first_name?.[0] || ''}${p.last_name?.[0] || ''}`.toUpperCase();
+const AVATAR_COLORS = ['#0b7a75', '#1f6fd1', '#7b4bc4', '#c2477a', '#b26a00', '#13854e', '#3d6a8a'];
+const avatarColor = id => AVATAR_COLORS[[...String(id)].reduce((a, c) => a + c.charCodeAt(0), 0) % AVATAR_COLORS.length];
+function age(dob) {
+  const [m, d, y] = dob.split('/').map(Number);
+  const now = new Date();
+  let years = now.getFullYear() - y;
+  if (now.getMonth() + 1 < m || (now.getMonth() + 1 === m && now.getDate() < d)) years--;
+  return years;
+}
 
 async function api(path, options = {}) {
   const res = await fetch(path, { headers: { 'Content-Type': 'application/json' }, ...options });
   const body = await res.json();
-  if (body.error) throw new Error(body.error.message);
+  if (body.error) throw new Error(typeof body.error.message === 'string' ? body.error.message : 'Request failed');
   return body.data;
 }
 
-async function loadPatients() {
-  const params = new URLSearchParams([...new FormData($('filters'))].filter(([, v]) => v.trim()));
-  const rows = await api('/patients?' + params);
-  $('patients').innerHTML = rows.length ? rows.map(p => `<tr>
-      <td><strong>${esc(p.first_name)} ${esc(p.last_name)}</strong></td>
-      <td>${esc(p.date_of_birth)}</td><td>${esc(p.sex)}</td><td>${fmtPhone(p.phone_number)}</td>
-      <td class="wrap">${esc(p.address_line_1)}${p.address_line_2 ? ', ' + esc(p.address_line_2) : ''}, ${esc(p.city)}, ${esc(p.state)} ${esc(p.zip_code)}</td>
-      <td class="wrap">${p.insurance_provider ? esc(p.insurance_provider) + (p.insurance_member_id ? ' · ' + esc(p.insurance_member_id) : '') : '<span class="muted">—</span>'}</td>
-      <td>${esc(p.preferred_language)}</td><td class="muted">${fmtTime(p.created_at)}</td></tr>`).join('')
-    : '<tr><td colspan="8" class="empty">No patients found.</td></tr>';
+let patients = [];
+let calls = [];
+
+function renderPatients() {
+  const q = $('quick').value.trim().toLowerCase();
+  const digits = q.replace(/\D/g, '');
+  const rows = patients.filter(p => !q || `${p.first_name} ${p.last_name} ${p.city} ${p.state} ${p.insurance_provider || ''}`.toLowerCase().includes(q)
+    || (digits.length >= 3 && p.phone_number.includes(digits)));
+  $('p-count').textContent = `${rows.length} of ${patients.length}`;
+  $('patients').innerHTML = rows.length ? rows.map(p => `<tr data-id="${esc(p.patient_id)}">
+      <td><div class="patient-cell"><div class="avatar" style="background:${avatarColor(p.patient_id)}">${esc(initials(p))}</div>
+        <div><div class="name">${esc(p.first_name)} ${esc(p.last_name)}</div><div class="sub mono">#${esc(p.patient_id.slice(0, 8))}</div></div></div></td>
+      <td>${age(p.date_of_birth)} y · ${esc(p.sex === 'Decline to Answer' ? 'Undisclosed' : p.sex)}<div class="sub">${esc(p.date_of_birth)}</div></td>
+      <td>${fmtPhone(p.phone_number)}</td>
+      <td>${esc(p.city)}, ${esc(p.state)}<div class="sub">${esc(p.zip_code)}</div></td>
+      <td>${p.insurance_provider ? `<span class="tag ins">${esc(p.insurance_provider)}</span>` : '<span class="tag">Self-pay</span>'}</td>
+      <td><span class="tag lang">${esc(p.preferred_language)}</span></td>
+      <td>${fmtDate(p.created_at)}<div class="sub">${new Date(p.created_at).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}</div></td>
+    </tr>`).join('')
+    : `<tr><td colspan="7" class="empty">${patients.length ? 'No patients match your search.' : 'No patients registered yet. Call the clinic line or start a simulated call.'}</td></tr>`;
 }
 
-async function loadCalls() {
-  const calls = await api('/calls?limit=20');
-  $('calls').innerHTML = calls.length ? calls.map(c => `<details>
-      <summary><span class="badge ${esc(c.status)}">${esc(c.status.replace('_', ' '))}</span>
-        <span>${c.channel === 'simulator' ? 'Browser test' : 'Phone ' + esc(c.from_number || '')}</span>
-        <span class="muted">${fmtTime(c.created_at)} · ${c.transcript.filter(t => t.role === 'caller').length} caller turns</span></summary>
-      <div class="transcript">${c.transcript.map(t => `<div><strong>${t.role === 'agent' ? 'Ava' : t.role === 'caller' ? 'Caller' : 'System'}:</strong> ${esc(t.text)}</div>`).join('')}</div>
-    </details>`).join('') : '<div class="empty">No calls yet.</div>';
+function transcriptHtml(transcript) {
+  return transcript.map(t => `<div class="line ${t.role}"${dirAttr(t.text)}><b>${t.role === 'agent' ? 'Huzaifa' : t.role === 'caller' ? 'Caller' : 'System'}</b>${esc(t.text)}</div>`).join('');
 }
 
-function refresh() { loadPatients().catch(console.error); loadCalls().catch(console.error); }
+function callTitle(c) {
+  const patient = c.patient_id && patients.find(p => p.patient_id === c.patient_id);
+  if (patient) return `${patient.first_name} ${patient.last_name}`;
+  const d = c.state?.data || {};
+  if (d.first_name) return `${d.first_name} ${d.last_name || ''}`.trim();
+  return c.channel === 'simulator' ? 'Simulated caller' : (c.from_number || 'Unknown caller');
+}
+
+function renderCalls() {
+  $('c-count').textContent = calls.length ? `${calls.length} recent` : '';
+  const LANG = { en: 'English', ur: 'Urdu', es: 'Spanish' };
+  $('calls').innerHTML = calls.length ? calls.map(c => {
+    const turns = c.transcript.filter(t => t.role === 'caller').length;
+    const mins = Math.max(0, Math.round((new Date(c.updated_at) - new Date(c.created_at)) / 1000));
+    return `<details class="call">
+      <summary>
+        <div class="call-icon">${c.channel === 'simulator'
+          ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M8 22h8M12 18v4"/></svg>'
+          : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>'}</div>
+        <div class="call-main"><div class="name">${esc(callTitle(c))}</div>
+          <div class="sub">${c.channel === 'simulator' ? 'Browser simulator' : 'Phone ' + esc(c.from_number || '')} · ${fmtTime(c.created_at)} · ${turns} turns · ${Math.floor(mins / 60)}m ${mins % 60}s</div></div>
+        <span class="tag lang">${LANG[c.state?.language] || 'English'}</span>
+        <span class="tag ${esc(c.status)}">${esc(c.status.replace('_', ' '))}</span>
+      </summary>
+      <div class="transcript">${transcriptHtml(c.transcript)}</div>
+    </details>`;
+  }).join('') : '<div class="empty">No calls yet.</div>';
+}
+
+function renderStats() {
+  $('s-patients').textContent = patients.length;
+  $('s-today').textContent = patients.filter(p => isToday(p.created_at)).length;
+  const finished = calls.filter(c => c.status !== 'in_progress');
+  $('s-rate').textContent = finished.length ? `${Math.round(100 * finished.filter(c => c.status === 'completed').length / finished.length)}%` : '–';
+  $('s-lang').textContent = patients.filter(p => p.preferred_language && p.preferred_language !== 'English').length;
+}
+
+async function refresh() {
+  try {
+    const params = new URLSearchParams([...new FormData($('filters'))].filter(([, v]) => v.trim()));
+    [patients, calls] = await Promise.all([api('/patients?' + params), api('/calls?limit=25')]);
+    renderPatients(); renderCalls(); renderStats();
+  } catch (error) { console.error(error); }
+}
+
+async function loadHealth() {
+  try {
+    const h = await api('/health');
+    $('status').innerHTML = `<span class="dot on"></span>Agent online · ${esc(h.llm)}`;
+    if (h.phone_number) {
+      const p = h.phone_number.replace(/\D/g, '').replace(/^1/, '');
+      $('phone').hidden = false;
+      $('phone').href = `tel:${h.phone_number}`;
+      $('phone').querySelector('span').textContent = `Clinic line +1 (${p.slice(0, 3)}) ${p.slice(3, 6)}-${p.slice(6)}`;
+    }
+  } catch {
+    $('status').innerHTML = '<span class="dot off"></span>Agent offline';
+  }
+}
+
 $('refresh').onclick = refresh;
-$('filters').onsubmit = e => { e.preventDefault(); loadPatients(); };
+$('filters').onsubmit = e => { e.preventDefault(); refresh(); };
+$('quick').oninput = renderPatients;
+loadHealth();
 refresh();
 setInterval(refresh, 15000);
 
-// ---- Browser test chat ----
+// ---- Patient detail drawer ----
+function openPatient(id) {
+  const p = patients.find(x => x.patient_id === id);
+  if (!p) return;
+  $('d-avatar').textContent = initials(p);
+  $('d-avatar').style.background = avatarColor(p.patient_id);
+  $('d-name').textContent = `${p.first_name} ${p.last_name}`;
+  $('d-id').textContent = p.patient_id;
+  const kv = rows => `<dl class="kv">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v || '<span class="sub">—</span>'}</dd>`).join('')}</dl>`;
+  const linked = calls.filter(c => c.patient_id === p.patient_id);
+  $('d-body').innerHTML = `
+    <div class="section"><h3>Demographics</h3>${kv([
+      ['Date of birth', `${esc(p.date_of_birth)} <span class="sub">(${age(p.date_of_birth)} years)</span>`],
+      ['Sex', esc(p.sex)], ['Preferred language', `<span class="tag lang">${esc(p.preferred_language)}</span>`]])}</div>
+    <div class="section"><h3>Contact</h3>${kv([['Phone', fmtPhone(p.phone_number)], ['Email', esc(p.email)]])}</div>
+    <div class="section"><h3>Address</h3>${kv([['Street', esc([p.address_line_1, p.address_line_2].filter(Boolean).join(', '))],
+      ['City / State', `${esc(p.city)}, ${esc(p.state)}`], ['ZIP', esc(p.zip_code)]])}</div>
+    <div class="section"><h3>Insurance</h3>${kv([['Provider', esc(p.insurance_provider) || 'Self-pay'], ['Member ID', p.insurance_member_id ? `<span class="mono">${esc(p.insurance_member_id)}</span>` : '']])}</div>
+    <div class="section"><h3>Emergency contact</h3>${kv([['Name', esc(p.emergency_contact_name)], ['Phone', p.emergency_contact_phone ? fmtPhone(p.emergency_contact_phone) : '']])}</div>
+    <div class="section"><h3>Record</h3>${kv([['Created', fmtTime(p.created_at)], ['Last updated', fmtTime(p.updated_at)]])}</div>
+    <div class="section"><h3>Intake calls (${linked.length})</h3>${linked.length
+      ? linked.map(c => `<details class="call"><summary style="padding:8px 0"><span class="tag ${esc(c.status)}">${esc(c.status)}</span><span class="sub">${fmtTime(c.created_at)} · ${c.channel === 'simulator' ? 'Simulator' : 'Phone'}</span></summary><div class="transcript" style="padding:0 0 12px">${transcriptHtml(c.transcript)}</div></details>`).join('')
+      : '<div class="sub">Registered through the API or seed data.</div>'}</div>`;
+  document.getElementById('drawer-root').classList.add('open');
+}
+function closeDrawer() { document.getElementById('drawer-root').classList.remove('open'); }
+$('patients').onclick = e => { const row = e.target.closest('tr[data-id]'); if (row) openPatient(row.dataset.id); };
+$('scrim').onclick = closeDrawer;
+$('d-close').onclick = closeDrawer;
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
+
+// ---- Call simulator ----
 let sessionId = null;
 function addMessage(role, text) {
   const div = document.createElement('div');
   div.className = `msg ${role}`;
+  if (hasUrdu(text)) { div.dir = 'rtl'; div.lang = 'ur'; }
   div.textContent = text;
   $('chat').appendChild(div);
   $('chat').scrollTop = $('chat').scrollHeight;
   if (role === 'agent' && $('speak').checked && 'speechSynthesis' in window) {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = hasUrdu(text) ? 'ur-PK' : /[¿¡ñáéíóú]/i.test(text) ? 'es-US' : 'en-US';
+    const voice = speechSynthesis.getVoices().find(v => v.lang.replace('_', '-').startsWith(utterance.lang.slice(0, 2)));
+    if (voice) utterance.voice = voice;
     speechSynthesis.cancel();
-    speechSynthesis.speak(new SpeechSynthesisUtterance(text));
+    speechSynthesis.speak(utterance);
   }
 }
-function setChatEnabled(on) { ['chat-text', 'send', 'mic'].forEach(id => { $(id).disabled = !on; }); if (!recognition) $('mic').disabled = true; }
+function setChatEnabled(on) {
+  ['chat-text', 'send'].forEach(id => { $(id).disabled = !on; });
+  $('mic').disabled = !on || !recognition;
+}
+function showTyping(on) {
+  const existing = $('typing');
+  if (on && !existing) { const t = document.createElement('div'); t.id = 'typing'; t.className = 'typing'; t.textContent = 'Huzaifa is responding…'; $('chat').appendChild(t); $('chat').scrollTop = $('chat').scrollHeight; }
+  if (!on && existing) existing.remove();
+}
 
 $('new-session').onclick = async () => {
   $('chat').innerHTML = '';
-  const data = await api('/simulator/sessions', { method: 'POST' });
-  sessionId = data.session_id;
-  addMessage('agent', data.reply);
-  setChatEnabled(true);
-  $('chat-text').focus();
+  try {
+    const data = await api('/simulator/sessions', { method: 'POST' });
+    sessionId = data.session_id;
+    addMessage('system', 'Call connected');
+    addMessage('agent', data.reply);
+    setChatEnabled(true);
+    $('chat-text').focus();
+  } catch (error) { addMessage('system', 'Could not start: ' + error.message); }
 };
 
 async function send(text) {
   if (!text.trim() || !sessionId) return;
   addMessage('caller', text);
   setChatEnabled(false);
+  showTyping(true);
   try {
     const data = await api(`/simulator/sessions/${sessionId}/messages`, { method: 'POST', body: JSON.stringify({ text }) });
+    showTyping(false);
     addMessage('agent', data.reply);
-    if (data.hangup) { addMessage('system', 'Call ended.'); sessionId = null; refresh(); return; }
+    if (data.hangup) { addMessage('system', 'Call ended'); sessionId = null; refresh(); return; }
     setChatEnabled(true);
     $('chat-text').focus();
   } catch (error) {
+    showTyping(false);
     addMessage('system', 'Error: ' + error.message);
     setChatEnabled(true);
   }
@@ -169,10 +473,16 @@ $('chat-form').onsubmit = e => { e.preventDefault(); const t = $('chat-text').va
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 const recognition = SpeechRecognition ? new SpeechRecognition() : null;
 if (recognition) {
-  recognition.lang = 'en-US';
   recognition.onresult = e => send(e.results[0][0].transcript);
-  recognition.onend = () => { $('mic').textContent = '🎤'; };
-  $('mic').onclick = () => { $('mic').textContent = '…'; recognition.start(); };
+  recognition.onend = () => $('mic').classList.remove('live');
+  recognition.onerror = () => $('mic').classList.remove('live');
+  $('mic').onclick = () => {
+    recognition.lang = $('mic-lang').value;
+    $('mic').classList.add('live');
+    recognition.start();
+  };
+} else {
+  $('mic').title = 'Voice input needs Chrome or Edge';
 }
 </script>
 </body>

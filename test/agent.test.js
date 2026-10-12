@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const { startTestServer, fakeLlm } = require('./helpers');
 
 const FULL = {
-  first_name: 'John', last_name: 'Davis', date_of_birth: '03/04/1990', sex: 'Male', phone_number: '5553334444',
+  first_name: 'Ahmed', last_name: 'Qureshi', date_of_birth: '03/04/1990', sex: 'Male', phone_number: '5553334444',
   address_line_1: '1 Elm Street', city: 'Austin', state: 'TX', zip_code: '78701'
 };
 const turn = (fields = {}) => ({ updates: {}, intent: 'continue', language: 'en', offered_optional: false, reply: 'ok', ...fields });
@@ -26,13 +26,13 @@ test('happy path: collect, read back, confirm, save', async () => {
 
   await say('Everything at once');
   const readBack = await say('No thanks');
-  assert.match(readBack.reply, /John Davis/);
+  assert.match(readBack.reply, /Ahmed Qureshi/);
   assert.match(readBack.reply, /March 4, 1990/);
   assert.match(readBack.reply, /Is all of that correct/);
 
   const done = await say('Yes');
   assert.equal(done.hangup, true);
-  assert.match(done.reply, /You're all set, John/);
+  assert.match(done.reply, /You're all set, Ahmed/);
   const stored = (await server.request('GET', '/patients?phone_number=5553334444')).body.data;
   assert.equal(stored.length, 1);
   assert.equal(stored[0].patient_id, done.patient_id);
@@ -67,21 +67,21 @@ test('invalid value is rejected server-side and re-prompted specifically', async
 
 test('correction during confirmation reads back the change before saving', async () => {
   const llm = fakeLlm([
-    turn({ updates: { ...FULL, last_name: 'Davies' }, intent: 'read_back' }),
+    turn({ updates: { ...FULL, last_name: 'Kureshi' }, intent: 'read_back' }),
     // Even if the model jumps straight to confirm_save, the change must be read back first.
-    turn({ updates: { last_name: 'Davis' }, intent: 'confirm_save' }),
+    turn({ updates: { last_name: 'Qureshi' }, intent: 'confirm_save' }),
     turn({ intent: 'confirm_save' })
   ]);
   const server = await startTestServer({ llm });
   const say = await session(server);
-  assert.match((await say('...')).reply, /Davies/);
-  const reread = await say('Actually it is spelled D-A-V-I-S');
+  assert.match((await say('...')).reply, /Kureshi/);
+  const reread = await say('Actually it is spelled Q-U-R-E-S-H-I');
   assert.equal(reread.hangup, false);
-  assert.match(reread.reply, /Last name: Davis. Everything else stays the same/);
+  assert.match(reread.reply, /Last name: Qureshi. Everything else stays the same/);
   assert.equal((await server.request('GET', '/patients')).body.data.length, 0);
   const done = await say('Yes');
   assert.equal(done.hangup, true);
-  assert.equal((await server.request('GET', '/patients')).body.data[0].last_name, 'Davis');
+  assert.equal((await server.request('GET', '/patients')).body.data[0].last_name, 'Qureshi');
   await server.close();
 });
 
@@ -94,11 +94,11 @@ test('returning caller: duplicate phone detected, update instead of create', asy
   ]);
   const server = await startTestServer({ llm });
   const created = await server.request('POST', '/patients', {
-    first_name: 'Jane', last_name: 'Doe', date_of_birth: '04/12/1985', sex: 'Female', phone_number: '5555550100',
+    first_name: 'Ayesha', last_name: 'Khan', date_of_birth: '04/12/1985', sex: 'Female', phone_number: '5555550100',
     address_line_1: '123 Main', address_line_2: 'Apt 4B', city: 'Springfield', state: 'IL', zip_code: '62701'
   });
   const say = await session(server);
-  assert.match((await say('My number is 555 555 0100')).reply, /already have a record for Jane Doe/);
+  assert.match((await say('My number is 555 555 0100')).reply, /already have a record for Ayesha Khan/);
   await say('Yes, I moved to Chicago');
   assert.match((await say('That is all')).reply, /Chicago/);
   const done = await say('Yes');
@@ -112,10 +112,10 @@ test('returning caller: duplicate phone detected, update instead of create', asy
 });
 
 test('start over clears collected data', async () => {
-  const llm = fakeLlm([turn({ updates: { first_name: 'Ann' } }), turn({ intent: 'start_over', reply: 'Sure, from the top.' })]);
+  const llm = fakeLlm([turn({ updates: { first_name: 'Hina' } }), turn({ intent: 'start_over', reply: 'Sure, from the top.' })]);
   const server = await startTestServer({ llm });
   const say = await session(server);
-  await say('Ann');
+  await say('Hina');
   await say('start over');
   const calls = (await server.request('GET', '/calls')).body.data;
   assert.deepEqual(calls[0].state.data, {});
@@ -142,7 +142,7 @@ test('LLM outage falls back to scripted flow without going silent', async () => 
   const llm = fakeLlm([new Error('rate limited')]);
   const server = await startTestServer({ llm });
   const say = await session(server);
-  const res = await say('John Davis');
+  const res = await say('Ahmed Qureshi');
   assert.ok(res.reply.length > 0);
   assert.equal(res.hangup, false);
   await server.close();
@@ -151,9 +151,9 @@ test('LLM outage falls back to scripted flow without going silent', async () => 
 test('scripted mode (no LLM key) completes a registration end to end', async () => {
   const server = await startTestServer();
   const say = await session(server);
-  for (const answer of ['John Davis', 'March 4th 1990', 'male', '555 333 4444', '1 Elm Street', 'Austin', 'Texas']) await say(answer);
+  for (const answer of ['Ahmed Qureshi', 'March 4th 1990', 'male', '555 333 4444', '1 Elm Street', 'Austin', 'Texas']) await say(answer);
   const readBack = await say('78701');
-  assert.match(readBack.reply, /John Davis/);
+  assert.match(readBack.reply, /Ahmed Qureshi/);
   const done = await say('yes');
   assert.equal(done.hangup, true);
   const p = (await server.request('GET', '/patients')).body.data[0];

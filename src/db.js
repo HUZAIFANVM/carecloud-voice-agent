@@ -49,17 +49,17 @@ CREATE INDEX IF NOT EXISTS idx_calls_patient ON calls (patient_id);
 
 const SEED_PATIENTS = [
   {
-    patient_id: '00000000-0000-4000-8000-000000000001', first_name: 'Jane', last_name: 'Doe', date_of_birth: '04/12/1985',
-    sex: 'Female', phone_number: '5555550100', email: 'jane.doe@example.com', address_line_1: '123 Main Street',
-    address_line_2: 'Apt 4B', city: 'Springfield', state: 'IL', zip_code: '62701', insurance_provider: 'Blue Cross Blue Shield',
-    insurance_member_id: 'BCB123456789', preferred_language: 'English', emergency_contact_name: 'John Doe',
+    patient_id: '00000000-0000-4000-8000-000000000001', first_name: 'Ayesha', last_name: 'Khan', date_of_birth: '04/12/1985',
+    sex: 'Female', phone_number: '5555550100', email: 'ayesha.khan@example.com', address_line_1: '7400 Harwin Drive',
+    address_line_2: 'Apt 4B', city: 'Houston', state: 'TX', zip_code: '77036', insurance_provider: 'Blue Cross Blue Shield',
+    insurance_member_id: 'BCB123456789', preferred_language: 'English', emergency_contact_name: 'Usman Khan',
     emergency_contact_phone: '5555550101'
   },
   {
-    patient_id: '00000000-0000-4000-8000-000000000002', first_name: 'Carlos', last_name: 'Rivera', date_of_birth: '11/30/1972',
-    sex: 'Male', phone_number: '5555550102', email: null, address_line_1: '456 Oak Avenue', address_line_2: null,
-    city: 'Austin', state: 'TX', zip_code: '78701', insurance_provider: null, insurance_member_id: null,
-    preferred_language: 'Spanish', emergency_contact_name: null, emergency_contact_phone: null
+    patient_id: '00000000-0000-4000-8000-000000000002', first_name: 'Bilal', last_name: 'Ahmed', date_of_birth: '11/30/1972',
+    sex: 'Male', phone_number: '5555550102', email: null, address_line_1: '2400 West Devon Avenue', address_line_2: null,
+    city: 'Chicago', state: 'IL', zip_code: '60659', insurance_provider: null, insurance_member_id: null,
+    preferred_language: 'Urdu', emergency_contact_name: null, emergency_contact_phone: null
   }
 ];
 

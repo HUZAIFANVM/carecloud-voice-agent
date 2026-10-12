@@ -16,10 +16,15 @@ const STATE_FULL_NAMES = {
 
 const MONTHS = {
   en: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
-  es: ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
+  es: ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'],
+  ur: ['جنوری', 'فروری', 'مارچ', 'اپریل', 'مئی', 'جون', 'جولائی', 'اگست', 'ستمبر', 'اکتوبر', 'نومبر', 'دسمبر']
 };
 
-const SEX_ES = { Male: 'masculino', Female: 'femenino', Other: 'otro', 'Decline to Answer': 'prefiere no decir' };
+const SEX_LABELS = {
+  es: { Male: 'masculino', Female: 'femenino', Other: 'otro', 'Decline to Answer': 'prefiere no decir' },
+  ur: { Male: 'مرد', Female: 'خاتون', Other: 'دیگر', 'Decline to Answer': 'بتانا نہیں چاہتے' }
+};
+const speakSex = (sex, language) => SEX_LABELS[language]?.[sex] || sex.toLowerCase();
 
 const FIELD_LABELS = {
   en: {
@@ -35,6 +40,13 @@ const FIELD_LABELS = {
     zip_code: 'código postal', insurance_provider: 'aseguradora', insurance_member_id: 'número de miembro del seguro',
     preferred_language: 'idioma preferido', emergency_contact_name: 'contacto de emergencia',
     emergency_contact_phone: 'teléfono del contacto de emergencia'
+  },
+  ur: {
+    first_name: 'پہلا نام', last_name: 'خاندانی نام', date_of_birth: 'تاریخ پیدائش', sex: 'جنس', phone_number: 'فون نمبر',
+    email: 'ای میل', address_line_1: 'گلی کا پتہ', address_line_2: 'اپارٹمنٹ یا یونٹ', city: 'شہر', state: 'ریاست',
+    zip_code: 'زپ کوڈ', insurance_provider: 'انشورنس کمپنی', insurance_member_id: 'انشورنس ممبر آئی ڈی',
+    preferred_language: 'ترجیحی زبان', emergency_contact_name: 'ایمرجنسی رابطے کا نام',
+    emergency_contact_phone: 'ایمرجنسی رابطے کا فون نمبر'
   }
 };
 
@@ -53,12 +65,19 @@ const QUESTIONS = {
     sex: '¿Cuál es su sexo? Puede decir masculino, femenino, otro, o prefiero no decir.',
     phone_number: '¿Cuál es el mejor número de teléfono de diez dígitos para contactarle?', address_line_1: '¿Cuál es su dirección?',
     city: '¿En qué ciudad?', state: '¿Y en qué estado?', zip_code: '¿Cuál es su código postal?'
+  },
+  ur: {
+    first_name: 'آپ کا پہلا نام کیا ہے؟', last_name: 'اور آپ کا خاندانی نام؟',
+    date_of_birth: 'آپ کی تاریخ پیدائش کیا ہے، سال کے ساتھ؟',
+    sex: 'آپ کی جنس کیا ہے؟ آپ مرد، خاتون، دیگر، یا نہیں بتانا چاہتے کہہ سکتے ہیں۔',
+    phone_number: 'آپ سے رابطے کے لیے دس ہندسوں کا فون نمبر کیا ہے؟', address_line_1: 'آپ کا گلی کا پتہ کیا ہے؟',
+    city: 'یہ کس شہر میں ہے؟', state: 'اور کون سی ریاست؟', zip_code: 'آپ کا زپ کوڈ کیا ہے؟'
   }
 };
 
 const TEXT = {
   en: {
-    greeting: "Hi, thanks for calling CareCloud! I'm Ava, and I can get you registered as a new patient in just a few minutes. Para español, solo diga español. To start, could I get your first and last name?",
+    greeting: "Hi, thanks for calling CareCloud! I'm Huzaifa, and I can get you registered as a new patient in just a few minutes. Para español, diga español. Urdu ke liye, Urdu kahiye. To start, could I get your first and last name?",
     noInput: "Sorry, I didn't catch that.",
     noInputGoodbye: "I'm having trouble hearing you, so I'll end the call for now. Please call back any time. Goodbye!",
     startOver: "No problem, let's start fresh. What's your first and last name?",
@@ -79,7 +98,7 @@ const TEXT = {
     alreadyFinished: 'This call has already been completed. Thank you, goodbye!'
   },
   es: {
-    greeting: '¡Hola, gracias por llamar a CareCloud! Soy Ava y puedo registrarle como paciente nuevo en unos minutos. Para empezar, ¿me puede dar su nombre y apellido?',
+    greeting: '¡Hola, gracias por llamar a CareCloud! Soy Huzaifa y puedo registrarle como paciente nuevo en unos minutos. Para empezar, ¿me puede dar su nombre y apellido?',
     noInput: 'Perdón, no le escuché.',
     noInputGoodbye: 'Tengo problemas para escucharle, así que terminaré la llamada por ahora. Puede llamar de nuevo cuando quiera. ¡Adiós!',
     startOver: 'Claro, empecemos de nuevo. ¿Cuál es su nombre y apellido?',
@@ -98,6 +117,47 @@ const TEXT = {
     removed: label => `${label} eliminado`,
     correctionQuestion: 'Todo lo demás queda igual. ¿Ahora está todo correcto?',
     alreadyFinished: 'Esta llamada ya terminó. Gracias, ¡adiós!'
+  },
+  // Urdu closings also end with "Goodbye": it is in the Vapi assistant's endCallPhrases.
+  ur: {
+    greeting: 'السلام علیکم، کیئر کلاؤڈ کال کرنے کا شکریہ! میں حذیفہ ہوں، اور چند منٹوں میں آپ کو نئے مریض کے طور پر رجسٹر کر سکتا ہوں۔ شروع کرنے کے لیے، اپنا پورا نام بتائیں؟',
+    noInput: 'معاف کیجیے، میں سن نہیں سکا۔',
+    noInputGoodbye: 'مجھے آپ کی آواز نہیں آ رہی، اس لیے میں ابھی کال ختم کر رہا ہوں۔ آپ کسی بھی وقت دوبارہ کال کر سکتے ہیں۔ اللہ حافظ، Goodbye!',
+    startOver: 'کوئی بات نہیں، نئے سرے سے شروع کرتے ہیں۔ آپ کا پورا نام کیا ہے؟',
+    goodbye: 'کوئی بات نہیں۔ کیئر کلاؤڈ کال کرنے کا شکریہ۔ اللہ حافظ، Goodbye!',
+    saved: name => `بہت شکریہ ${name}! آپ کی رجسٹریشن محفوظ ہو گئی ہے، ہم آپ سے ملنے کے منتظر ہیں۔ اللہ حافظ، Goodbye!`,
+    updated: name => `بہت شکریہ ${name}! میں نے آپ کی معلومات اپ ڈیٹ کر دی ہیں۔ اللہ حافظ، Goodbye!`,
+    saveFailedRetry: 'معذرت، آپ کی معلومات محفوظ کرنے میں ہماری طرف سے مسئلہ آیا۔ کیا میں دوبارہ کوشش کروں؟',
+    saveFailedFinal: 'بہت معذرت، ہمارا سسٹم ابھی آپ کی رجسٹریشن محفوظ نہیں کر پا رہا۔ براہ کرم تھوڑی دیر بعد دوبارہ کال کریں۔ اللہ حافظ، Goodbye.',
+    invalidField: label => `معاف کیجیے، یہ ${label} درست نہیں لگ رہا۔ کیا آپ اپنا ${label} دوبارہ بتا سکتے ہیں؟`,
+    duplicate: (first, last) => `لگتا ہے ہمارے پاس پہلے سے ${first} ${last} کا ریکارڈ موجود ہے۔ کیا آپ نیا ریکارڈ بنانے کے بجائے اپنی معلومات اپ ڈیٹ کرنا چاہیں گے؟`,
+    technical: 'معاف کیجیے، ایک لمحہ۔ آگے چلتے ہیں۔',
+    retryUnderstanding: 'معاف کیجیے، میں ٹھیک سے سمجھ نہیں سکا۔ کیا آپ دوبارہ بتا سکتے ہیں؟',
+    readBackIntro: 'ٹھیک ہے، میں آپ کی معلومات دہرا دیتا ہوں۔',
+    readBackQuestion: 'کیا یہ سب درست ہے، یا آپ کچھ تبدیل کرنا چاہیں گے؟',
+    correctionIntro: 'ٹھیک ہے، میں نے اپ ڈیٹ کر دیا۔',
+    removed: label => `${label} ہٹا دیا گیا`,
+    correctionQuestion: 'باقی سب ویسا ہی ہے۔ کیا اب سب درست ہے؟',
+    alreadyFinished: 'یہ کال مکمل ہو چکی ہے۔ شکریہ، اللہ حافظ!'
+  }
+};
+
+// Per-language sentence pieces for the read-back.
+const READ_BACK = {
+  en: {
+    identity: (d, dob, sex) => `Your name is ${d.first_name} ${d.last_name}, born ${dob}, sex ${sex}.`,
+    phone: 'Phone number', address: 'Address', email: 'Email', insurance: 'Insurance', memberId: 'member ID',
+    emergency: 'Emergency contact', language: 'Preferred language', end: '.', sep: ', '
+  },
+  es: {
+    identity: (d, dob, sex) => `Su nombre es ${d.first_name} ${d.last_name}, nacido el ${dob}, sexo ${sex}.`,
+    phone: 'Teléfono', address: 'Dirección', email: 'Correo', insurance: 'Seguro', memberId: 'número de miembro',
+    emergency: 'Contacto de emergencia', language: 'Idioma preferido', end: '.', sep: ', '
+  },
+  ur: {
+    identity: (d, dob, sex) => `آپ کا نام ${d.first_name} ${d.last_name} ہے، تاریخ پیدائش ${dob}، جنس ${sex}۔`,
+    phone: 'فون نمبر', address: 'پتہ', email: 'ای میل', insurance: 'انشورنس', memberId: 'ممبر آئی ڈی',
+    emergency: 'ایمرجنسی رابطہ', language: 'ترجیحی زبان', end: '۔', sep: '، '
   }
 };
 
@@ -112,29 +172,29 @@ const spell = value => String(value).split('').join(' ');
 function speakDate(mmddyyyy, language) {
   const [month, day, year] = mmddyyyy.split('/').map(Number);
   const monthName = (MONTHS[language] || MONTHS.en)[month - 1];
-  return language === 'es' ? `${day} de ${monthName} de ${year}` : `${monthName} ${day}, ${year}`;
+  if (language === 'es') return `${day} de ${monthName} de ${year}`;
+  if (language === 'ur') return `${day} ${monthName} ${year}`;
+  return `${monthName} ${day}, ${year}`;
 }
 
 function buildReadBack(data, language) {
-  const es = language === 'es';
+  const r = READ_BACK[language] || READ_BACK.en;
   const parts = [text(language).readBackIntro];
-  parts.push(es
-    ? `Su nombre es ${data.first_name} ${data.last_name}, nacido el ${speakDate(data.date_of_birth, language)}, sexo ${SEX_ES[data.sex]}.`
-    : `Your name is ${data.first_name} ${data.last_name}, born ${speakDate(data.date_of_birth, language)}, sex ${data.sex.toLowerCase()}.`);
-  parts.push(`${es ? 'Teléfono' : 'Phone number'} ${speakPhone(data.phone_number)}.`);
-  const street = [data.address_line_1, data.address_line_2].filter(Boolean).join(', ');
-  parts.push(`${es ? 'Dirección' : 'Address'} ${street}, ${data.city}, ${STATE_FULL_NAMES[data.state] || data.state}, ${spell(data.zip_code)}.`);
-  if (data.email) parts.push(`${es ? 'Correo' : 'Email'} ${data.email}.`);
+  parts.push(r.identity(data, speakDate(data.date_of_birth, language), speakSex(data.sex, language)));
+  parts.push(`${r.phone} ${speakPhone(data.phone_number)}${r.end}`);
+  const street = [data.address_line_1, data.address_line_2].filter(Boolean).join(r.sep);
+  parts.push(`${r.address} ${[street, data.city, STATE_FULL_NAMES[data.state] || data.state, spell(data.zip_code)].join(r.sep)}${r.end}`);
+  if (data.email) parts.push(`${r.email} ${data.email}${r.end}`);
   if (data.insurance_provider || data.insurance_member_id) {
-    const id = data.insurance_member_id ? `, ${es ? 'número de miembro' : 'member ID'} ${spell(data.insurance_member_id)}` : '';
-    parts.push(`${es ? 'Seguro' : 'Insurance'} ${data.insurance_provider || ''}${id}.`);
+    const id = data.insurance_member_id ? `${r.sep}${r.memberId} ${spell(data.insurance_member_id)}` : '';
+    parts.push(`${r.insurance} ${data.insurance_provider || ''}${id}${r.end}`);
   }
   if (data.emergency_contact_name || data.emergency_contact_phone) {
-    const phone = data.emergency_contact_phone ? `, ${speakPhone(data.emergency_contact_phone)}` : '';
-    parts.push(`${es ? 'Contacto de emergencia' : 'Emergency contact'} ${data.emergency_contact_name || ''}${phone}.`);
+    const phone = data.emergency_contact_phone ? `${r.sep}${speakPhone(data.emergency_contact_phone)}` : '';
+    parts.push(`${r.emergency} ${data.emergency_contact_name || ''}${phone}${r.end}`);
   }
   if (data.preferred_language && data.preferred_language !== 'English') {
-    parts.push(`${es ? 'Idioma preferido' : 'Preferred language'} ${data.preferred_language}.`);
+    parts.push(`${r.language} ${data.preferred_language}${r.end}`);
   }
   parts.push(text(language).readBackQuestion);
   return parts.join(' ');
@@ -146,7 +206,7 @@ function speakValue(field, value, language) {
   if (field === 'phone_number' || field === 'emergency_contact_phone') return speakPhone(value);
   if (field === 'zip_code' || field === 'insurance_member_id') return spell(value);
   if (field === 'state') return STATE_FULL_NAMES[value] || value;
-  if (field === 'sex' && language === 'es') return SEX_ES[value];
+  if (field === 'sex') return language === 'en' ? value : speakSex(value, language);
   return value;
 }
 
@@ -155,8 +215,9 @@ function buildCorrectionReadBack(fields, data, language) {
   const parts = fields.map(field => (data[field]
     ? `${fieldLabel(field, language)}: ${speakValue(field, data[field], language)}`
     : t.removed(fieldLabel(field, language))));
-  const sentence = parts.join(', ');
-  return `${t.correctionIntro} ${sentence.charAt(0).toUpperCase()}${sentence.slice(1)}. ${t.correctionQuestion}`;
+  const r = READ_BACK[language] || READ_BACK.en;
+  const sentence = parts.join(r.sep);
+  return `${t.correctionIntro} ${sentence.charAt(0).toUpperCase()}${sentence.slice(1)}${r.end} ${t.correctionQuestion}`;
 }
 
 const fieldLabel = (field, language) => (FIELD_LABELS[language] || FIELD_LABELS.en)[field] || field.replaceAll('_', ' ');
