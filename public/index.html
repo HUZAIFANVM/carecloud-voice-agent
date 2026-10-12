@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CareCloud Intake</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --surface: #ffffff; --text: #1b1f24; --muted: #5f6b7a; --border: #e1e5ea;
+    --accent: #2357d9; --accent-soft: #e8eefc; --ok: #1d7a46; --warn: #a15c00; --bad: #b42318;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #111418; --surface: #1a1f25; --text: #e6e9ed; --muted: #97a3b1; --border: #2b323b;
+            --accent: #7aa2ff; --accent-soft: #1f2a44; --ok: #5cc98a; --warn: #f0b45c; --bad: #ff7b72; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.5 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: var(--bg); color: var(--text); }
+  header { padding: 20px 16px 8px; max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 20px; margin: 0; }
+  header p { margin: 4px 0 0; color: var(--muted); }
+  main { max-width: 1200px; margin: 0 auto; padding: 12px 16px 40px; display: grid; gap: 16px; grid-template-columns: 1fr; }
+  @media (min-width: 960px) { main { grid-template-columns: 2fr 1fr; } }
+  section { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; min-width: 0; }
+  h2 { font-size: 15px; margin: 0 0 12px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  input, button { font: inherit; color: inherit; }
+  input { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; min-width: 0; flex: 1; }
+  button { background: var(--accent); color: #fff; border: 0; border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+  button.secondary { background: var(--accent-soft); color: var(--accent); }
+  button:disabled { opacity: .5; cursor: default; }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  th { color: var(--muted); font-weight: 600; }
+  td.wrap { white-space: normal; min-width: 180px; }
+  .muted { color: var(--muted); }
+  .badge { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; background: var(--accent-soft); color: var(--accent); }
+  .badge.completed { color: var(--ok); } .badge.abandoned { color: var(--warn); } .badge.failed { color: var(--bad); }
+  .chat { height: 380px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; padding: 10px; background: var(--bg); display: flex; flex-direction: column; gap: 8px; }
+  .msg { max-width: 85%; padding: 8px 10px; border-radius: 10px; white-space: pre-wrap; }
+  .msg.agent { background: var(--surface); border: 1px solid var(--border); align-self: flex-start; }
+  .msg.caller { background: var(--accent); color: #fff; align-self: flex-end; }
+  .msg.system { align-self: center; color: var(--muted); font-size: 12px; }
+  .chat-input { display: flex; gap: 8px; margin-top: 8px; }
+  details { border-bottom: 1px solid var(--border); padding: 8px 0; }
+  summary { cursor: pointer; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .transcript { margin: 8px 0 0; padding-left: 12px; border-left: 2px solid var(--border); font-size: 13px; }
+  .transcript div { margin: 4px 0; }
+  .empty { color: var(--muted); padding: 12px 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>CareCloud Patient Intake</h1>
+  <p>Patients registered by the voice agent, call transcripts, and a browser test chat that uses the same agent as the phone line.</p>
+</header>
+<main>
+  <section>
+    <h2>Patients <button class="secondary" id="refresh">Refresh</button></h2>
+    <form class="toolbar" id="filters">
+      <input name="last_name" placeholder="Last name">
+      <input name="date_of_birth" placeholder="DOB MM/DD/YYYY">
+      <input name="phone_number" placeholder="Phone">
+      <button type="submit">Search</button>
+    </form>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Name</th><th>DOB</th><th>Sex</th><th>Phone</th><th>Address</th><th>Insurance</th><th>Language</th><th>Registered</th></tr></thead>
+        <tbody id="patients"></tbody>
+      </table>
+    </div>
+    <h2 style="margin-top:24px">Recent calls</h2>
+    <div id="calls"></div>
+  </section>
+
+  <section>
+    <h2>Test the agent <button id="new-session">New conversation</button></h2>
+    <div class="chat" id="chat"><div class="msg system">Start a conversation to talk to Ava. Typed or spoken (Chrome) replies go through the same agent as a phone call.</div></div>
+    <form class="chat-input" id="chat-form">
+      <input id="chat-text" placeholder="Type what the caller says…" autocomplete="off" disabled>
+      <button type="button" class="secondary" id="mic" title="Speak (Chrome)" disabled>🎤</button>
+      <button type="submit" id="send" disabled>Send</button>
+    </form>
+    <label class="muted" style="display:block;margin-top:8px"><input type="checkbox" id="speak" style="flex:none"> Read Ava's replies aloud</label>
+  </section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fmtPhone = p => (p && p.length === 10 ? `(${p.slice(0, 3)}) ${p.slice(3, 6)}-${p.slice(6)}` : esc(p || ''));
+const fmtTime = iso => new Date(iso).toLocaleString();
+
+async function api(path, options = {}) {
+  const res = await fetch(path, { headers: { 'Content-Type': 'application/json' }, ...options });
+  const body = await res.json();
+  if (body.error) throw new Error(body.error.message);
+  return body.data;
+}
+
+async function loadPatients() {
+  const params = new URLSearchParams([...new FormData($('filters'))].filter(([, v]) => v.trim()));
+  const rows = await api('/patients?' + params);
+  $('patients').innerHTML = rows.length ? rows.map(p => `<tr>
+      <td><strong>${esc(p.first_name)} ${esc(p.last_name)}</strong></td>
+      <td>${esc(p.date_of_birth)}</td><td>${esc(p.sex)}</td><td>${fmtPhone(p.phone_number)}</td>
+      <td class="wrap">${esc(p.address_line_1)}${p.address_line_2 ? ', ' + esc(p.address_line_2) : ''}, ${esc(p.city)}, ${esc(p.state)} ${esc(p.zip_code)}</td>
+      <td class="wrap">${p.insurance_provider ? esc(p.insurance_provider) + (p.insurance_member_id ? ' · ' + esc(p.insurance_member_id) : '') : '<span class="muted">—</span>'}</td>
+      <td>${esc(p.preferred_language)}</td><td class="muted">${fmtTime(p.created_at)}</td></tr>`).join('')
+    : '<tr><td colspan="8" class="empty">No patients found.</td></tr>';
+}
+
+async function loadCalls() {
+  const calls = await api('/calls?limit=20');
+  $('calls').innerHTML = calls.length ? calls.map(c => `<details>
+      <summary><span class="badge ${esc(c.status)}">${esc(c.status.replace('_', ' '))}</span>
+        <span>${c.channel === 'simulator' ? 'Browser test' : 'Phone ' + esc(c.from_number || '')}</span>
+        <span class="muted">${fmtTime(c.created_at)} · ${c.transcript.filter(t => t.role === 'caller').length} caller turns</span></summary>
+      <div class="transcript">${c.transcript.map(t => `<div><strong>${t.role === 'agent' ? 'Ava' : t.role === 'caller' ? 'Caller' : 'System'}:</strong> ${esc(t.text)}</div>`).join('')}</div>
+    </details>`).join('') : '<div class="empty">No calls yet.</div>';
+}
+
+function refresh() { loadPatients().catch(console.error); loadCalls().catch(console.error); }
+$('refresh').onclick = refresh;
+$('filters').onsubmit = e => { e.preventDefault(); loadPatients(); };
+refresh();
+setInterval(refresh, 15000);
+
+// ---- Browser test chat ----
+let sessionId = null;
+function addMessage(role, text) {
+  const div = document.createElement('div');
+  div.className = `msg ${role}`;
+  div.textContent = text;
+  $('chat').appendChild(div);
+  $('chat').scrollTop = $('chat').scrollHeight;
+  if (role === 'agent' && $('speak').checked && 'speechSynthesis' in window) {
+    speechSynthesis.cancel();
+    speechSynthesis.speak(new SpeechSynthesisUtterance(text));
+  }
+}
+function setChatEnabled(on) { ['chat-text', 'send', 'mic'].forEach(id => { $(id).disabled = !on; }); if (!recognition) $('mic').disabled = true; }
+
+$('new-session').onclick = async () => {
+  $('chat').innerHTML = '';
+  const data = await api('/simulator/sessions', { method: 'POST' });
+  sessionId = data.session_id;
+  addMessage('agent', data.reply);
+  setChatEnabled(true);
+  $('chat-text').focus();
+};
+
+async function send(text) {
+  if (!text.trim() || !sessionId) return;
+  addMessage('caller', text);
+  setChatEnabled(false);
+  try {
+    const data = await api(`/simulator/sessions/${sessionId}/messages`, { method: 'POST', body: JSON.stringify({ text }) });
+    addMessage('agent', data.reply);
+    if (data.hangup) { addMessage('system', 'Call ended.'); sessionId = null; refresh(); return; }
+    setChatEnabled(true);
+    $('chat-text').focus();
+  } catch (error) {
+    addMessage('system', 'Error: ' + error.message);
+    setChatEnabled(true);
+  }
+}
+$('chat-form').onsubmit = e => { e.preventDefault(); const t = $('chat-text').value; $('chat-text').value = ''; send(t); };
+
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const recognition = SpeechRecognition ? new SpeechRecognition() : null;
+if (recognition) {
+  recognition.lang = 'en-US';
+  recognition.onresult = e => send(e.results[0][0].transcript);
+  recognition.onend = () => { $('mic').textContent = '🎤'; };
+  $('mic').onclick = () => { $('mic').textContent = '…'; recognition.start(); };
+}
+</script>
+</body>
+</html>

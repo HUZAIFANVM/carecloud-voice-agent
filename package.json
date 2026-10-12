@@ -1,0 +1,23 @@
+{
+  "name": "carecloud-voice-patient-agent",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Voice AI patient registration agent (Vapi + free-tier LLM + SQLite + REST API)",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning src/server.js",
+    "dev": "node --disable-warning=ExperimentalWarning --watch src/server.js",
+    "test": "node --disable-warning=ExperimentalWarning --test test/*.test.js",
+    "tunnel": "cloudflared tunnel --url http://localhost:3000",
+    "setup:vapi": "node scripts/setup-vapi.js"
+  },
+  "engines": {
+    "node": ">=22.13"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "zod": "^3.24.2"
+  }
+}
